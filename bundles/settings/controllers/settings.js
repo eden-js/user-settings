@@ -1,7 +1,5 @@
 
 // Require dependencies
-const config     = require('config');
-const socket     = require('socket');
 const Controller = require('controller');
 
 // require local dependencies
@@ -19,37 +17,30 @@ class SettingsController extends Controller {
     super();
 
     // bind methods
-    this.build = this.build.bind(this);
-    this.settingAction = this.settingAction.bind(this);
-
-    // Run
-    this.build();
+    this.settingSetAction = this.settingSetAction.bind(this);
+    this.settingGetAction = this.settingGetAction.bind(this);
   }
 
   /**
-   * build settings controller
+   * sets setting event
    *
-   * @param {router} router
+   * @param {String} name
+   * @param {*} value
+   *
+   * @call setting.get
    */
-  build() {
-    // on render
-    this.eden.pre('view.render', async (data) => {
-      // set render values
-      const user    = data.req.user;
-      const session = data.req.sessionID;
-
-      // set settings
-      data.render.settings = (await Setting.or({
-        session,
-      }, {
-        'user.id' : user ? user.get('_id').toString() : 'false',
-      }).find()).map((setting) => {
-        // return Object
-        return {
-          name  : setting.get('name'),
-          value : setting.get('value'),
-        };
-      });
+  async settingGetAction(data, { user, sessionID }) {
+    // set settings
+    return (await Setting.or({
+      session : sessionID,
+    }, {
+      'user.id' : user ? user.get('_id').toString() : 'false',
+    }).find()).map((setting) => {
+      // return Object
+      return {
+        name  : setting.get('name'),
+        value : setting.get('value'),
+      };
     });
   }
 
@@ -61,24 +52,24 @@ class SettingsController extends Controller {
    *
    * @call setting.set
    */
-  async settingAction(name, value, opts) {
+  async settingSetAction(data, { user, sessionID, socket }) {
     // emit setting
-    socket[opts.user ? 'user' : 'session'](opts.user || opts.sessionID, 'setting', data);
+    socket.emit('setting', data);
 
     // check setting exists
     const setting = await Setting.or({
-      session : opts.sessionID,
+      session : sessionID,
     }, {
-      'user.id' : opts.user ? opts.user.get('_id').toString() : 'false',
+      'user.id' : user ? user.get('_id').toString() : 'false',
     }).where({
       name : data.name,
-    }).findOne() || new setting({
+    }).findOne() || new Setting({
       name : data.name,
     });
 
     // check session/user
-    setting.set('user', opts.user);
-    setting.set('session', opts.sessionID);
+    setting.set('user', user);
+    setting.set('session', sessionID);
 
     // set setting
     setting.set('value', data.value);

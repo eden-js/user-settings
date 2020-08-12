@@ -1,35 +1,35 @@
 
 // require dependencies
-const store  = require('default/public/js/store');
 const Events = require('events');
 const socket = require('socket/public/js/bootstrap');
 
 /**
  * create form store
  */
-class SettingStore extends Events {
+class SettingsStore extends Events {
   /**
    * construct riot store
    */
-  constructor() {
+  constructor(...args) {
     // set observable
-    super(...arguments);
+    super(...args);
 
-    // set values
-    (store.get('settings') || []).forEach((setting) => {
-      // set name and value
-      this[setting.name] = setting.value;
-    });
+    // set data
+    this.__data = {};
 
     // bind methods
     this.get = this.get.bind(this);
     this.set = this.set.bind(this);
 
     // bind private methods
-    this._setting = this._setting.bind(this);
+    this.onSetting = this.onSetting.bind(this);
 
     // listen to socket for setting
-    socket.on('setting', this._setting);
+    socket.on('setting', this.onSetting);
+
+    // On user socket
+    socket.on('user', this.__update);
+    this.__update();
   }
 
   /**
@@ -41,7 +41,7 @@ class SettingStore extends Events {
    */
   get(name) {
     // return value
-    return this[name];
+    return this.__data[name];
   }
 
   /**
@@ -52,10 +52,10 @@ class SettingStore extends Events {
    */
   set(name, value) {
     // get value
-    const old = this[name];
+    const old = this.__data[name];
 
     // set setting
-    this[name] = value;
+    this.__data[name] = value;
 
     // trigger update
     if (old !== value) {
@@ -63,7 +63,7 @@ class SettingStore extends Events {
       this.emit('update');
 
       // emit setting
-      socket.emit('setting', {
+      socket.call('setting.set', {
         name,
         value,
       });
@@ -77,15 +77,35 @@ class SettingStore extends Events {
    *
    * @private
    */
-  _setting(setting) {
+  onSetting(setting) {
     // get value
-    const old = this[setting.name];
+    const old = this.__data[setting.name];
 
     // set setting
-    this[setting.name] = setting.value;
+    this.__data[setting.name] = setting.value;
 
     // update if different
     if (old !== setting.value) this.emit('update');
+  }
+
+  /**
+   * update
+   */
+  __update() {
+    // check window
+    if (typeof window === 'undefined') return;
+
+    // emit setting
+    socket.call('setting.get', {}).then((settings) => {
+      // settings
+      settings.forEach((setting) => {
+        // set name and value
+        this.__data[setting.name] = setting.value;
+      });
+
+      // update
+      if (settings.length) this.emit('update');
+    });
   }
 }
 
@@ -94,4 +114,4 @@ class SettingStore extends Events {
  *
  * @type {SettingStore}
  */
-exports = module.exports = new SettingStore();
+module.exports = new SettingsStore();
