@@ -33,7 +33,7 @@ module.exports = (toMix) => {
 
     // create unbound function
     const updated = () => {
-      toMix.update();
+      toMix.safeUpdate();
     };
 
     // On update

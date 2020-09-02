@@ -56,13 +56,16 @@ class SettingsController extends Controller {
     // emit setting
     socket.emit('setting', data);
 
+    // create lock
+    const unlock = await this.eden.lock(`setting.${sessionID}`);
+
     // check setting exists
-    const setting = await Setting.or({
+    const setting = await Setting.where({
+      name    : data.name,
       session : sessionID,
-    }, {
+    }).findOne() || await Setting.where({
+      name      : data.name,
       'user.id' : user ? user.get('_id').toString() : 'false',
-    }).where({
-      name : data.name,
     }).findOne() || new Setting({
       name : data.name,
     });
@@ -76,6 +79,9 @@ class SettingsController extends Controller {
 
     // save setting
     await setting.save();
+
+    // unlock
+    unlock();
   }
 }
 
