@@ -21,6 +21,9 @@ class SettingsStore extends Events {
     this.get = this.get.bind(this);
     this.set = this.set.bind(this);
 
+    // bind update
+    this.__update = this.__update.bind(this);
+
     // bind private methods
     this.onSetting = this.onSetting.bind(this);
 
