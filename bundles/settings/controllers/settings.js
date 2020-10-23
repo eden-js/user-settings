@@ -29,7 +29,7 @@ class SettingsController extends Controller {
    *
    * @call setting.get
    */
-  async settingGetAction(data, { user, sessionID }) {
+  async settingGetAction({ user, sessionID }, data) {
     // set settings
     return (await Setting.or({
       session : sessionID,
@@ -52,7 +52,7 @@ class SettingsController extends Controller {
    *
    * @call setting.set
    */
-  async settingSetAction(data, { user, sessionID, socket }) {
+  async settingSetAction({ user, sessionID, socket }, data) {
     // emit setting
     socket.emit('setting', data);
 
