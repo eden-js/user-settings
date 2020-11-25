@@ -98,16 +98,26 @@ class SettingsStore extends Events {
     // check window
     if (typeof window === 'undefined') return;
 
-    // emit setting
-    socket.call('setting.get', {}).then((settings) => {
-      // settings
-      settings.forEach((setting) => {
-        // set name and value
-        this.__data[setting.name] = setting.value;
-      });
+    // load
+    const load = () => {
+      // emit setting
+      socket.call('setting.get', {}).then((settings) => {
+        // settings
+        settings.forEach((setting) => {
+          // set name and value
+          this.__data[setting.name] = setting.value;
+        });
 
-      // update
-      if (settings.length) this.emit('update');
+        // update
+        if (settings.length) this.emit('update');
+      });
+    };
+
+    // await ready
+    $(() => {
+      // timeout
+      load();
+      setTimeout(load, 1000);
     });
   }
 }

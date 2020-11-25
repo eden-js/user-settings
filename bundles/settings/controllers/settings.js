@@ -19,6 +19,22 @@ class SettingsController extends Controller {
     // bind methods
     this.settingSetAction = this.settingSetAction.bind(this);
     this.settingGetAction = this.settingGetAction.bind(this);
+
+    // on socket connect
+    this.eden.pre('socket.connect', async ({ socket }) => {
+      // set settings
+      return (await Setting.or({
+        session : socket.request.sessionID,
+      }, {
+        'user.id' : socket.user ? socket.user.get('_id').toString() : 'false',
+      }).find()).map((setting) => {
+        // return Object
+        socket.emit('setting', {
+          name  : setting.get('name'),
+          value : setting.get('value'),
+        });
+      });
+    });
   }
 
   /**
