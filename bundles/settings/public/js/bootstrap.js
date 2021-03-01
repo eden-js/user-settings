@@ -33,6 +33,11 @@ class SettingsStore extends Events {
     // On user socket
     socket.on('user', this.__update);
     this.__update();
+
+    // building
+    this.building = new Promise((resolve) => {
+      this.__built = resolve;
+    });
   }
 
   /**
@@ -110,6 +115,7 @@ class SettingsStore extends Events {
 
         // update
         if (settings.length) this.emit('update');
+        this.__built();
       });
     };
 
@@ -127,4 +133,4 @@ class SettingsStore extends Events {
  *
  * @type {SettingStore}
  */
-module.exports = new SettingsStore();
+module.exports = window.eden.settings = new SettingsStore();
