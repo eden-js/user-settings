@@ -69,6 +69,7 @@ class SettingsStore extends Events {
     if (old !== value) {
       // trigger update
       this.emit('update');
+      this.emit(name, value);
 
       // emit setting
       socket.call('setting.set', {
@@ -93,7 +94,10 @@ class SettingsStore extends Events {
     this.__data[setting.name] = setting.value;
 
     // update if different
-    if (old !== setting.value) this.emit('update');
+    if (old !== setting.value) {
+      this.emit('update');
+      this.emit(setting.name, setting.value);
+    }
   }
 
   /**
@@ -111,20 +115,23 @@ class SettingsStore extends Events {
         settings.forEach((setting) => {
           // set name and value
           this.__data[setting.name] = setting.value;
+          this.emit(setting.name, setting.value);
         });
 
         // update
-        if (settings.length) this.emit('update');
+        if (settings.length) {
+          this.emit('update');
+        }
         this.__built();
       });
     };
 
     // await ready
-    $(() => {
+    (() => {
       // timeout
       load();
       setTimeout(load, 1000);
-    });
+    })();
   }
 }
 
