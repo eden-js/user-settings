@@ -1,12 +1,12 @@
 
 // require dependencies
-const Events = require('events');
-const socket = require('socket/public/js/bootstrap');
+import socket from 'socket/public/js/bootstrap';
+import { EventEmitter } from 'events';
 
 /**
  * create form store
  */
-class SettingsStore extends Events {
+class SettingsStore extends EventEmitter {
   /**
    * construct riot store
    */
@@ -135,9 +135,11 @@ class SettingsStore extends Events {
   }
 }
 
-/**
- * export built settings store
- *
- * @type {SettingStore}
- */
-module.exports = window.eden.settings = new SettingsStore();
+// built settings
+const builtSettings = new SettingsStore();
+
+// build settings
+window.eden.settings = builtSettings;
+
+// export
+export default builtSettings;
