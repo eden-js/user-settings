@@ -2,9 +2,9 @@
 import { useState, useEffect } from 'react';
 
 // create use dashup macro
-const useSettings = (key) => {
+const useSettings = (key, def) => {
   // use state
-  const [setting, setSetting] = useState(typeof eden !== 'undefined' ? eden.settings.get(key) : null);
+  const [setting, setSetting] = useState(typeof eden !== 'undefined' ? eden.settings.get(key) || def : def);
 
   // on settings
   const onSetting = (val) => {
@@ -18,6 +18,7 @@ const useSettings = (key) => {
     if (typeof eden === 'undefined') return setSetting(val);
 
     // set to settings
+    setSetting(val);
     eden.settings.set(key, val);
   };
 
@@ -34,7 +35,7 @@ const useSettings = (key) => {
       // remove lisetener
       eden.settings.removeListener(key, onSetting);
     };
-  });
+  }, [typeof eden !== 'undefined' ? !!eden.settings : false]);
   
   // return dashup
   return [setting, setValue];
