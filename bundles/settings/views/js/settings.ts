@@ -13,13 +13,13 @@ const useSettings = (key, def) => {
   };
 
   // set value
-  const setValue = (val) => {
+  const setValue = (val, force) => {
     // check settings
     if (typeof eden === 'undefined') return setSetting(val);
 
     // set to settings
     setSetting(val);
-    eden.settings.set(key, val);
+    eden.settings.set(key, val, force);
   };
 
   // get dashup

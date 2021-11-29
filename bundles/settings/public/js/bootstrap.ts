@@ -34,6 +34,9 @@ class SettingsStore extends EventEmitter {
     socket.on('user', this.__update);
     this.__update();
 
+    // set max listeners
+    this.setMaxListeners(0);
+
     // building
     this.building = new Promise((resolve) => {
       this.__built = resolve;
@@ -58,7 +61,7 @@ class SettingsStore extends EventEmitter {
    * @param  {String} name
    * @param  {*} value
    */
-  set(name, value) {
+  set(name, value, force) {
     // get value
     const old = this.__data[name];
 
@@ -66,7 +69,7 @@ class SettingsStore extends EventEmitter {
     this.__data[name] = value;
 
     // trigger update
-    if (old !== value) {
+    if (force || JSON.stringify(old) !== JSON.stringify(value)) {
       // trigger update
       this.emit('update');
       this.emit(name, value);
